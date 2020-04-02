@@ -9,7 +9,7 @@
     "url": "https://github.com/dominique-mueller/web-worker-rxjs-experiment"
   },
   "scripts": {
-    "build": "webpack --mode production",
+    "build": "webpack --mode development",
     "start": "webpack-dev-server --open"
   },
   "dependencies": {
