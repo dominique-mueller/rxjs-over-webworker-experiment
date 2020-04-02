@@ -22,6 +22,9 @@ const stream = interval(1000).pipe(
 // });
 
 const api = {
+  next: (value: any) => {
+    console.log('NEXT VALUE', value);
+  },
   subscribe: (callback: any) => {
     const callbackProxy = (...args: any) => {
       callback(...args);

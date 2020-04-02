@@ -3,6 +3,7 @@ import { Remote, proxy } from "comlink";
 
 export interface RemoteAPI {
   subscribe: (callback: any) => any;
+  next: (value: any) => any;
 }
 
 /**
@@ -17,9 +18,10 @@ export class RemoteSubject<T> {
     this.worker = worker;
   }
 
-  // public next(): void {
-  //   // TODO: ...
-  // }
+  public next(value: any): void {
+    // TODO: Prevent mutation??
+    this.worker.next(value);
+  }
 
   public subscribe(callback: any): Subscription {
     return this.createSubscribeProxyObservable().subscribe(callback);

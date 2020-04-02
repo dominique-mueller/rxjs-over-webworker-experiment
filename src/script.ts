@@ -40,6 +40,8 @@ const main = async () => {
 
   // PIPES
 
+  subject.next("TEST VALUE");
+
   const subscription: Subscription = subject
     .pipe(
       tap((count: number) => {
