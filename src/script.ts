@@ -1,6 +1,8 @@
 import ScriptWebWorker from "./script.worker";
-import { Observable, Observer, fromEvent, Subject, Subscription } from "rxjs";
-import { wrap, Remote, proxy } from "comlink";
+import { Subscription } from "rxjs";
+import { wrap } from "comlink";
+import { RemoteSubject } from "./RemoteSubject";
+import { tap, take } from "rxjs/operators";
 
 console.log("Script is running.");
 
@@ -24,25 +26,58 @@ const main = async () => {
 
   console.log("Worker is ready.", worker, workerWrapper);
 
-  const subscriber = (count: number) => {
-    console.log("Counter:", count);
-  };
-  const unsubscribe = await workerWrapper.subscribe(proxy(subscriber));
+  const subject = new RemoteSubject(workerWrapper);
 
-  setTimeout(async () => {
-    const subscriber2 = (count: number) => {
-      console.log("Counter:", count);
-    };
-    const unsubscribe2 = await workerWrapper.subscribe(proxy(subscriber2));
+  // DIRECT SUBSCRIPTION
 
-    setTimeout(() => {
-      unsubscribe2();
-    }, 5000);
-  }, 2000);
+  // const subscription: Subscription = subject.subscribe((value: number) => {
+  //   console.log("Counter:", value);
+  // });
 
-  setTimeout(() => {
-    unsubscribe();
-  }, 5000);
+  // setTimeout(() => {
+  //   subscription.unsubscribe();
+  // }, 5000);
+
+  // PIPES
+
+  const subscription: Subscription = subject
+    .pipe(
+      tap((count: number) => {
+        console.log("Counter 1:", count);
+      }),
+      tap((count: number) => {
+        console.log("Counter 2:", count);
+      }),
+      take(7)
+    )
+    .subscribe(() => {
+      // Activate
+    });
+  // subscription.unsubscribe();
+
+  // setTimeout(() => {
+  //   subscription.unsubscribe();
+  // }, 5000);
+
+  // const subscriber = (count: number) => {
+  //   console.log("Counter:", count);
+  // };
+  // const unsubscribe = await workerWrapper.subscribe(proxy(subscriber));
+
+  // setTimeout(async () => {
+  //   const subscriber2 = (count: number) => {
+  //     console.log("Counter:", count);
+  //   };
+  //   const unsubscribe2 = await workerWrapper.subscribe(proxy(subscriber2));
+
+  //   setTimeout(() => {
+  //     unsubscribe2();
+  //   }, 5000);
+  // }, 2000);
+
+  // setTimeout(() => {
+  //   unsubscribe();
+  // }, 5000);
 };
 
 main();
