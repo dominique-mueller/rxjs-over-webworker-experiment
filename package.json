@@ -13,6 +13,7 @@
     "start": "webpack-dev-server --open"
   },
   "dependencies": {
+    "comlink": "4.2.x",
     "rxjs": "6.5.x"
   },
   "devDependencies": {
