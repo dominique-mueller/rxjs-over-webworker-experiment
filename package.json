@@ -1,0 +1,28 @@
+{
+  "name": "web-worker-rxjs-experiment",
+  "description": "WebWorker RxJS Experiment",
+  "version": "1.0.0",
+  "license": "MIT",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dominique-mueller/web-worker-rxjs-experiment"
+  },
+  "scripts": {
+    "build": "webpack --mode production",
+    "start": "webpack-dev-server --open"
+  },
+  "dependencies": {
+    "rxjs": "6.5.x"
+  },
+  "devDependencies": {
+    "clean-webpack-plugin": "3.0.x",
+    "html-webpack-plugin": "4.0.x",
+    "ts-loader": "6.2.x",
+    "typescript": "3.8.x",
+    "webpack-cli": "3.3.x",
+    "webpack-dev-server": "3.10.x",
+    "webpack": "4.42.x",
+    "worker-loader": "2.0.x"
+  }
+}
