@@ -4,9 +4,36 @@ import { WorkerSubject } from "./WorkerSubject";
 
 /**
  * Remote Subject
+ *
+ * TODO: What does the 'lift' function do??
  */
 // export class RemoteSubject<T> extends Subject<T> {
 export class RemoteSubject<T> {
+  /**
+   * Observers
+   */
+  public readonly observers: Remote<WorkerSubject<T>["observers"]>;
+
+  /**
+   * Closed flag
+   */
+  public readonly closed: Remote<WorkerSubject<T>["closed"]>;
+
+  /**
+   * Is stopped flag
+   */
+  public readonly isStopped: Remote<WorkerSubject<T>["isStopped"]>;
+
+  /**
+   * Has error flag
+   */
+  public readonly hasError: Remote<WorkerSubject<T>["hasError"]>;
+
+  /**
+   * Thrown error
+   */
+  public readonly thrownError: Remote<WorkerSubject<T>["thrownError"]>;
+
   /**
    * Worker subject
    */
@@ -19,21 +46,62 @@ export class RemoteSubject<T> {
    */
   constructor(workerSubject: Remote<WorkerSubject<T>>) {
     this.workerSubject = workerSubject;
+    this.observers = this.workerSubject.observers;
+    this.closed = this.workerSubject.closed;
+    this.isStopped = this.workerSubject.isStopped;
+    this.hasError = this.workerSubject.hasError;
+    this.thrownError = this.workerSubject.thrownError;
   }
 
-  public next(value: any): void {
-    this.workerSubject.next(value);
+  /**
+   * Next
+   *
+   * @param value Value
+   */
+  public next(value?: T): ReturnType<Remote<WorkerSubject<T>["next"]>> {
+    return this.workerSubject.next(value);
+  }
+
+  /**
+   * Error
+   *
+   * @param error Error
+   */
+  public error(error: any): ReturnType<Remote<WorkerSubject<T>["error"]>> {
+    return this.workerSubject.error(error);
+  }
+
+  /**
+   * Complete
+   */
+  public complete(): ReturnType<Remote<WorkerSubject<T>["complete"]>> {
+    return this.workerSubject.complete();
+  }
+
+  /**
+   * Unsubscribe
+   */
+  public unsubscribe(): ReturnType<Remote<WorkerSubject<T>["unsubscribe"]>> {
+    return this.workerSubject.unsubscribe();
+  }
+
+  public pipe(...operations: Array<OperatorFunction<any, any>>): any {
+    // TODO: Find a solution to type the pipe (huh, that rhymes!)
+    return (this.createSubscribeProxyObservable().pipe as any)(...operations);
   }
 
   public subscribe(callback: any): Subscription {
     return this.createSubscribeProxyObservable().subscribe(callback);
   }
 
-  public pipe(...operations: Array<OperatorFunction<any, any>>): any {
-    return (this.createSubscribeProxyObservable().pipe as any)(...operations);
+  /**
+   * As observable
+   */
+  public asObservable(): ReturnType<WorkerSubject<T>["asObservable"]> {
+    return this.createSubscribeProxyObservable();
   }
 
-  private createSubscribeProxyObservable() {
+  private createSubscribeProxyObservable(): Observable<T> {
     // Create new observable
     // Note: To hide the asynchronousity of the remote subject, we need a "wrapping" / "bridging" observable here so that we can return a
     // subscription instantly (synchronously).
@@ -45,7 +113,7 @@ export class RemoteSubject<T> {
         };
 
         // Subscribe to remote observable
-        const subscribeResult: Observable<any> = from(this.workerSubject.subscribe(proxy(proxySubscriber)) as Promise<any>);
+        const subscribeResult: Observable<any> = from(this.workerSubject.subscribe(proxy(proxySubscriber)));
 
         // Cleanup
         return (): void => {
