@@ -1,26 +1,28 @@
-import { Subscription, Observable, Subscriber, TeardownLogic, from, OperatorFunction } from "rxjs";
+import { Subscription, Observable, Subscriber, TeardownLogic, from, OperatorFunction, Subject } from "rxjs";
 import { Remote, proxy } from "comlink";
-
-export interface RemoteAPI {
-  subscribe: (callback: any) => any;
-  next: (value: any) => any;
-}
+import { WorkerSubject } from "./WorkerSubject";
 
 /**
  * Remote Subject
  */
-export class RemoteSubject<T> {
-  // export class RemoteSubject<T> extends Subject<T> {
-  private readonly worker: Remote<RemoteAPI>;
+export class RemoteSubject<T> extends Subject<T> {
+  /**
+   * Worker subject
+   */
+  private readonly workerSubject: Remote<WorkerSubject<T>>;
 
-  constructor(worker: Remote<RemoteAPI>) {
-    // super();
-    this.worker = worker;
+  /**
+   * Constructor
+   *
+   * @param workerSubject Worker subject
+   */
+  constructor(workerSubject: Remote<WorkerSubject<T>>) {
+    super();
+    this.workerSubject = workerSubject;
   }
 
   public next(value: any): void {
-    // TODO: Prevent mutation??
-    this.worker.next(value);
+    this.workerSubject.next(value);
   }
 
   public subscribe(callback: any): Subscription {
@@ -41,12 +43,12 @@ export class RemoteSubject<T> {
         };
 
         // Subscribe to remote observable
-        const subscribeResult: Observable<any> = from(this.worker.subscribe(proxy(proxySubscriber)) as Promise<any>);
+        const subscribeResult: Observable<any> = from(this.workerSubject.subscribe(proxy(proxySubscriber)) as Promise<any>);
 
         // Cleanup
         return (): void => {
-          subscribeResult.toPromise().then(unsubscribe => {
-            unsubscribe();
+          subscribeResult.toPromise().then((subscription: any) => {
+            subscription.unsubscribe();
           });
         };
       }

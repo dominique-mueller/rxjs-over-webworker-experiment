@@ -1,7 +1,7 @@
 import ScriptWebWorker from "./script.worker";
 import { Subscription } from "rxjs";
 import { wrap } from "comlink";
-import { RemoteSubject } from "./RemoteSubject";
+import { RemoteSubject } from "./subject/RemoteSubject";
 import { tap, take } from "rxjs/operators";
 
 console.log("Script is running.");
@@ -26,35 +26,41 @@ const main = async () => {
 
   console.log("Worker is ready.", worker, workerWrapper);
 
-  const subject = new RemoteSubject(workerWrapper);
+  const subject = new RemoteSubject(workerWrapper.testSubject);
 
   // DIRECT SUBSCRIPTION
 
-  // const subscription: Subscription = subject.subscribe((value: number) => {
-  //   console.log("Counter:", value);
-  // });
+  const subscription: Subscription = subject.subscribe((value: number) => {
+    console.log("Counter:", value);
+  });
 
-  // setTimeout(() => {
-  //   subscription.unsubscribe();
-  // }, 5000);
+  setTimeout(() => {
+    subscription.unsubscribe();
+  }, 5000);
+
+  // let i = 0;
+  // setInterval(() => {
+  //   subject.next(i);
+  //   i++;
+  // }, 1000);
 
   // PIPES
 
-  subject.next("TEST VALUE");
+  // subject.next("TEST VALUE");
 
-  const subscription: Subscription = subject
-    .pipe(
-      tap((count: number) => {
-        console.log("Counter 1:", count);
-      }),
-      tap((count: number) => {
-        console.log("Counter 2:", count);
-      }),
-      take(7)
-    )
-    .subscribe(() => {
-      // Activate
-    });
+  // const subscription: Subscription = subject
+  //   .pipe(
+  //     tap((count: number) => {
+  //       console.log("Counter 1:", count);
+  //     }),
+  //     tap((count: number) => {
+  //       console.log("Counter 2:", count);
+  //     }),
+  //     take(7)
+  //   )
+  //   .subscribe(() => {
+  //     // Activate
+  //   });
   // subscription.unsubscribe();
 
   // setTimeout(() => {
