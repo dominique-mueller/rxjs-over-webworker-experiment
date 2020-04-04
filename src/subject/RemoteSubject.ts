@@ -1,11 +1,12 @@
-import { Subscription, Observable, Subscriber, TeardownLogic, from, OperatorFunction, Subject } from "rxjs";
+import { Subscription, Observable, Subscriber, TeardownLogic, from, OperatorFunction, Subject, Observer, SubscriptionLike } from "rxjs";
 import { Remote, proxy } from "comlink";
 import { WorkerSubject } from "./WorkerSubject";
 
 /**
  * Remote Subject
  */
-export class RemoteSubject<T> extends Subject<T> {
+// export class RemoteSubject<T> extends Subject<T> {
+export class RemoteSubject<T> {
   /**
    * Worker subject
    */
@@ -17,7 +18,6 @@ export class RemoteSubject<T> extends Subject<T> {
    * @param workerSubject Worker subject
    */
   constructor(workerSubject: Remote<WorkerSubject<T>>) {
-    super();
     this.workerSubject = workerSubject;
   }
 
@@ -35,6 +35,8 @@ export class RemoteSubject<T> extends Subject<T> {
 
   private createSubscribeProxyObservable() {
     // Create new observable
+    // Note: To hide the asynchronousity of the remote subject, we need a "wrapping" / "bridging" observable here so that we can return a
+    // subscription instantly (synchronously).
     return new Observable<T>(
       (subscriber: Subscriber<T>): TeardownLogic => {
         // Emit values coming from the web worker into this observable
