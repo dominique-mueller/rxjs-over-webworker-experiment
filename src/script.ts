@@ -1,6 +1,6 @@
 import ScriptWebWorker from "./script.worker";
-import { Subscription } from "rxjs";
-import { wrap } from "comlink";
+import { Subscription, Subject } from "rxjs";
+import { wrap, expose } from "comlink";
 import { RemoteSubject } from "./subject/RemoteSubject";
 import { tap, take } from "rxjs/operators";
 
@@ -12,7 +12,7 @@ const main = async () => {
   const workerWrapper: any = wrap(worker);
 
   // Wait for worker to be ready
-  await new Promise(resolve => {
+  await new Promise((resolve) => {
     worker.addEventListener(
       "message",
       (event: MessageEvent) => {
@@ -25,6 +25,8 @@ const main = async () => {
   });
 
   console.log("Worker is ready.", worker, workerWrapper);
+
+  workerWrapper.experiment = "EXPERIMENT";
 
   const subject = new RemoteSubject(workerWrapper.testSubject);
 

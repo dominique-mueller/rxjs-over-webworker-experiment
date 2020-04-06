@@ -33,8 +33,13 @@ setInterval(() => {
 //   console.log(number);
 // });
 
+setInterval(() => {
+  console.log(api.experiment);
+}, 1000);
+
 const api = {
-  testSubject: subject
+  testSubject: subject,
+  experiment: null,
   // next: (value: any) => {
   //   console.log('NEXT VALUE', value);
   // },
