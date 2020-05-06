@@ -3,24 +3,27 @@ export default {} as typeof Worker & { new (): Worker };
 
 import { expose, proxy } from "comlink";
 import { interval, Subscription, Subject } from "rxjs";
-import { tap, share } from "rxjs/operators";
-import { WorkerSubject } from "./subject/WorkerSubject";
+import { tap, share, map } from "rxjs/operators";
+import { asWorkerSubject } from "./subject/WorkerSubject";
 
 console.log("[WORKER] Script is running.");
 
 // Announce readiness
 self.postMessage("READY");
 
-const subject = new WorkerSubject<number>();
-// subject.subscribe((value: number): void => {
+// const subject = new WorkerSubject<number>();
+// const subject = new Subject<number>();
+const source = interval(1000);
+const workerSubject = asWorkerSubject(source);
+// source.subscribe((value: number): void => {
 //   console.log(`[WORKER] ${value}`);
 // });
 
-let i = 0;
-setInterval(() => {
-  subject.next(i);
-  i++;
-}, 1000);
+// let i = 0;
+// setInterval(() => {
+//   subject.next(i);
+//   i++;
+// }, 1000);
 
 // const stream = interval(1000).pipe(
 //   tap((count: number) => {
@@ -33,12 +36,21 @@ setInterval(() => {
 //   console.log(number);
 // });
 
-setInterval(() => {
-  console.log(api.experiment);
-}, 1000);
+// setInterval(() => {
+//   console.log(api.experiment);
+// }, 1000);
 
 const api = {
-  testSubject: subject,
+  testSubject: workerSubject,
+  // createTestSubject() {
+  //   const subject = new WorkerSubject<number>();
+  //   let i = 0;
+  //   setInterval(() => {
+  //     subject.next(i);
+  //     i++;
+  //   }, 1000);
+  //   return proxy(subject);
+  // },
   experiment: null,
   // next: (value: any) => {
   //   console.log('NEXT VALUE', value);

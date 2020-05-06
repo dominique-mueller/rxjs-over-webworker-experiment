@@ -1,39 +1,13 @@
-import { Subscription, Observable, Subscriber, TeardownLogic, from, OperatorFunction, Subject, Observer, SubscriptionLike } from "rxjs";
+import { Subscription, Observable, Subscriber, TeardownLogic, from, OperatorFunction, Subject } from "rxjs";
 import { Remote, proxy } from "comlink";
+
 import { WorkerSubject } from "./WorkerSubject";
 
 /**
  * Remote Subject
- *
- * TODO: What does the 'lift' function do??
  */
 // export class RemoteSubject<T> extends Subject<T> {
 export class RemoteSubject<T> {
-  /**
-   * Observers
-   */
-  public readonly observers: Remote<WorkerSubject<T>["observers"]>;
-
-  /**
-   * Closed flag
-   */
-  public readonly closed: Remote<WorkerSubject<T>["closed"]>;
-
-  /**
-   * Is stopped flag
-   */
-  public readonly isStopped: Remote<WorkerSubject<T>["isStopped"]>;
-
-  /**
-   * Has error flag
-   */
-  public readonly hasError: Remote<WorkerSubject<T>["hasError"]>;
-
-  /**
-   * Thrown error
-   */
-  public readonly thrownError: Remote<WorkerSubject<T>["thrownError"]>;
-
   /**
    * Worker subject
    */
@@ -46,11 +20,6 @@ export class RemoteSubject<T> {
    */
   constructor(workerSubject: Remote<WorkerSubject<T>>) {
     this.workerSubject = workerSubject;
-    this.observers = this.workerSubject.observers;
-    this.closed = this.workerSubject.closed;
-    this.isStopped = this.workerSubject.isStopped;
-    this.hasError = this.workerSubject.hasError;
-    this.thrownError = this.workerSubject.thrownError;
   }
 
   /**
@@ -113,15 +82,47 @@ export class RemoteSubject<T> {
         };
 
         // Subscribe to remote observable
-        const subscribeResult: Observable<any> = from(this.workerSubject.subscribe(proxy(proxySubscriber)));
+        const subscribeResult: Observable<any> = from((this.workerSubject as any).remoteSubscribe(proxy(proxySubscriber)));
 
         // Cleanup
         return (): void => {
-          subscribeResult.toPromise().then((subscription: any) => {
+          subscribeResult.toPromise().then((subscription: Subscription): void => {
             subscription.unsubscribe();
           });
         };
       }
     );
   }
+}
+
+export function asRemoteSubject(workerSubject: any) {
+  return {
+    subscribe: (callback: any) => {
+      return createWorkerSubjectProxy(workerSubject).subscribe(callback);
+    },
+  };
+}
+
+export function createWorkerSubjectProxy(workerSubject: any) {
+  // Create new observable
+  // Note: To hide the asynchronousity of the remote subject, we need a "wrapping" / "bridging" observable here so that we can return a
+  // subscription instantly (synchronously).
+  return new Observable<any>(
+    (subscriber: Subscriber<any>): TeardownLogic => {
+      // Emit values coming from the web worker into this observable
+      const proxySubscriber = (...args: Array<any>): void => {
+        subscriber.next(...args);
+      };
+
+      // Subscribe to remote observable
+      const subscribeResult: Observable<any> = from(workerSubject.remoteSubscribe(proxy(proxySubscriber)));
+
+      // Cleanup
+      return (): void => {
+        subscribeResult.toPromise().then((subscription: Subscription): void => {
+          subscription.unsubscribe();
+        });
+      };
+    }
+  );
 }
