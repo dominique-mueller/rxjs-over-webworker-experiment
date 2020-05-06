@@ -1,4 +1,4 @@
-import { Subscription, Observable, Subscriber, TeardownLogic, from, OperatorFunction, Subject } from "rxjs";
+import { Subscription, Observable, Subscriber, TeardownLogic, from, OperatorFunction } from "rxjs";
 import { Remote, proxy } from "comlink";
 
 import { WorkerSubject } from "./WorkerSubject";

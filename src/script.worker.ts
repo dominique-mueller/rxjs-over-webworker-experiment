@@ -1,20 +1,20 @@
 declare const self: Worker;
 export default {} as typeof Worker & { new (): Worker };
 
-import { expose, proxy } from "comlink";
-import { interval, Subscription, Subject } from "rxjs";
-import { tap, share, map } from "rxjs/operators";
-import { asWorkerSubject } from "./subject/WorkerSubject";
+import { expose } from "comlink";
+import { interval } from "rxjs";
+
+import { asRemoteSource } from "./subject/WorkerSubject";
 
 console.log("[WORKER] Script is running.");
 
 // Announce readiness
-self.postMessage("READY");
+// self.postMessage("READY");
 
 // const subject = new WorkerSubject<number>();
 // const subject = new Subject<number>();
 const source = interval(1000);
-const workerSubject = asWorkerSubject(source);
+const workerSubject = asRemoteSource(source);
 // source.subscribe((value: number): void => {
 //   console.log(`[WORKER] ${value}`);
 // });

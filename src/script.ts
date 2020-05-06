@@ -1,8 +1,8 @@
+import { Subscription } from "rxjs";
+import { wrap } from "comlink";
+
 import ScriptWebWorker from "./script.worker";
-import { Subscription, Subject } from "rxjs";
-import { wrap, expose } from "comlink";
-import { RemoteSubject, asRemoteSubject } from "./subject/RemoteSubject";
-import { tap, take } from "rxjs/operators";
+import { asRemoteSubject } from "./subject/RemoteSubject";
 
 console.log("Script is running.");
 
@@ -11,18 +11,18 @@ const main = async () => {
   const worker: Worker = new ScriptWebWorker();
   const workerWrapper: any = wrap(worker);
 
-  // Wait for worker to be ready
-  await new Promise((resolve) => {
-    worker.addEventListener(
-      "message",
-      (event: MessageEvent) => {
-        if (event.data === "READY") {
-          resolve();
-        }
-      },
-      { once: true }
-    );
-  });
+  // // Wait for worker to be ready
+  // await new Promise((resolve) => {
+  //   worker.addEventListener(
+  //     "message",
+  //     (event: MessageEvent) => {
+  //       if (event.data === "READY") {
+  //         resolve();
+  //       }
+  //     },
+  //     { once: true }
+  //   );
+  // });
 
   console.log("Worker is ready.", worker, workerWrapper);
 

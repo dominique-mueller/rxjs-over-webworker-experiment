@@ -1,4 +1,4 @@
-import { Subscription, Subject } from "rxjs";
+import { Subscription, Subject, BehaviorSubject, Observable } from "rxjs";
 import { proxy } from "comlink";
 
 // type WorkerSubscription = Pick<Subscription, "unsubscribe">;
@@ -37,18 +37,22 @@ export class WorkerSubject<T> extends Subject<T> {
   }
 }
 
-export function asWorkerSubject<T>(subject: any): any {
-  subject.remoteSubscribe = (callback: any): any => {
-    // "Copy" the fallback function to not confuse RxJS about our proxies callback function
-    const callbackProxy = (...args: any): void => {
-      callback(...args);
-    };
+export function asRemoteSource<T>(source: Observable<T> | Subject<T> | BehaviorSubject<T>): any {
+  (source as any).remoteSubscribe = (...remoteSubscribeArgs: Array<any>): any => {
+    // "Proxy" any functions to not confuse RxJS
+    const remoteSubscribeArgsProxy = remoteSubscribeArgs.map((remoteSubscribeArg: any): any | ((...args: Array<any>) => any) => {
+      return remoteSubscribeArg instanceof Function
+        ? (...args: Array<any>): any => {
+            return remoteSubscribeArg(...args);
+          }
+        : remoteSubscribeArg;
+    });
 
     // Subscribe
-    const subscription: Subscription = subject.subscribe(callbackProxy);
+    const subscription: ReturnType<typeof source["subscribe"]> = source.subscribe(...remoteSubscribeArgsProxy);
 
     // Create unsubscribe proxy
-    const unsubscribeProxy = (): void => {
+    const unsubscribeProxy = (): ReturnType<Subscription["unsubscribe"]> => {
       return subscription.unsubscribe();
     };
 
@@ -58,5 +62,5 @@ export function asWorkerSubject<T>(subject: any): any {
     });
   };
 
-  return subject;
+  return source;
 }
