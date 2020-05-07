@@ -2,7 +2,7 @@ import { Subscription } from "rxjs";
 import { wrap } from "comlink";
 
 import ScriptWebWorker from "./script.worker";
-import { asRemoteSubject } from "./subject/RemoteSubject";
+import { wrapSubscribable } from "./subject/RemoteSubject";
 
 console.log("Script is running.");
 
@@ -26,7 +26,7 @@ const main = async () => {
 
   console.log("Worker is ready.", worker, workerWrapper);
 
-  const subject = asRemoteSubject(workerWrapper.testSubject);
+  const subject = wrapSubscribable(workerWrapper.testSubject);
 
   // const subject = new RemoteSubject(workerWrapper.testSubject);
   // const remoteSubject = await workerWrapper.createTestSubject();

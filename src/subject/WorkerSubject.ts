@@ -37,7 +37,7 @@ export class WorkerSubject<T> extends Subject<T> {
   }
 }
 
-export function asRemoteSource<T>(source: Observable<T> | Subject<T> | BehaviorSubject<T>): any {
+export function exposeSubscribable<T>(source: Observable<T> | Subject<T> | BehaviorSubject<T>): any {
   (source as any).remoteSubscribe = (...remoteSubscribeArgs: Array<any>): any => {
     // "Proxy" any functions to not confuse RxJS
     const remoteSubscribeArgsProxy = remoteSubscribeArgs.map((remoteSubscribeArg: any): any | ((...args: Array<any>) => any) => {

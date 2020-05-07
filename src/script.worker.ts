@@ -4,7 +4,7 @@ export default {} as typeof Worker & { new (): Worker };
 import { expose } from "comlink";
 import { interval } from "rxjs";
 
-import { asRemoteSource } from "./subject/WorkerSubject";
+import { exposeSubscribable } from "./subject/WorkerSubject";
 
 console.log("[WORKER] Script is running.");
 
@@ -14,7 +14,7 @@ console.log("[WORKER] Script is running.");
 // const subject = new WorkerSubject<number>();
 // const subject = new Subject<number>();
 const source = interval(1000);
-const workerSubject = asRemoteSource(source);
+const workerSubject = exposeSubscribable(source);
 // source.subscribe((value: number): void => {
 //   console.log(`[WORKER] ${value}`);
 // });

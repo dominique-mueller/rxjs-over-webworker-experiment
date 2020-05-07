@@ -95,7 +95,7 @@ export class RemoteSubject<T> {
   }
 }
 
-export function asRemoteSubject(workerSubject: any) {
+export function wrapSubscribable(workerSubject: any) {
   return {
     subscribe: (callback: any) => {
       return createWorkerSubjectProxy(workerSubject).subscribe(callback);
