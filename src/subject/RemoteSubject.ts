@@ -97,8 +97,14 @@ export class RemoteSubject<T> {
 
 export function wrapSubscribable(workerSubject: any) {
   return {
+    pipe: (...operations: Array<OperatorFunction<any, any>>) => {
+      return (createWorkerSubjectProxy(workerSubject).pipe as any)(...operations);
+    },
     subscribe: (callback: any) => {
       return createWorkerSubjectProxy(workerSubject).subscribe(callback);
+    },
+    unsubscribe(): void {
+      return workerSubject.unsubscribe();
     },
   };
 }
