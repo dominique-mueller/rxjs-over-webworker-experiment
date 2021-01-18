@@ -2,7 +2,7 @@ import { Subscription, Observable } from "rxjs";
 import { wrap } from "comlink";
 
 import ScriptWebWorker from "./script.worker";
-import { wrapSubscribable } from "./subject/RemoteSubject";
+import { wrapObservable } from "./rxjs-over-webworker/wrapObservable";
 
 import deepmerge from "deepmerge";
 
@@ -11,31 +11,25 @@ console.log("Script is running.");
 const main = async () => {
   // Instantiate worker
   const worker: Worker = new ScriptWebWorker();
-  const workerWrapper = wrap<{
-    testA: {
-      testB: string;
-    };
-    streams: {
-      testSubject: Observable<any>;
-    };
+  const workerApi = wrap<{
+    message: string;
+    intervalStream: Observable<number>;
   }>(worker);
 
-  const workerApi = deepmerge(workerWrapper, {
-    streams: {
-      testSubject: wrapSubscribable(workerWrapper.streams.testSubject),
-    },
+  // Special handling for RxJS streams
+  const workerApiWithStreams = deepmerge(workerApi, {
+    intervalStream: wrapObservable<number>(workerApi.intervalStream as any),
   });
 
-  // DIRECT SUBSCRIPTION
-
-  // const subscription: Subscription = api.testSubject.subscribe((value: number) => {
-  const subscription: Subscription = workerApi.streams.testSubject.subscribe((value: number) => {
+  // Example: Subscribe
+  const subscription: Subscription = workerApiWithStreams.intervalStream.subscribe((value: number): void => {
     console.log("Counter:", value);
   });
 
+  // Example: Unsubscribe after some time
   setTimeout(() => {
     subscription.unsubscribe();
-  }, 5000);
+  }, 5500);
 };
 
 main();
